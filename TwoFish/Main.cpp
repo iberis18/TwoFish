@@ -13,11 +13,11 @@ int main()
 	vector<unsigned int> arr = readFile("1.bmp");
 	TwoFish twofish;
 
-	string key = twofish.generateKey(); //генерация ключа
+	string key = twofish.generateKey();
 	cout << "Key:" << key << endl << endl;
 
-	vector<unsigned int> keyDWORD = stringToInt(key);
-	twofish.init(keyDWORD); //генерация ключей алгоритма
+	vector<unsigned int> intKey = stringToInt(key);
+	twofish.createKeys(intKey);
 
 	return 0;
 }	

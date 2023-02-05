@@ -140,6 +140,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="FileOperations.h" />
+    <ClInclude Include="GF2pow8.h" />
     <ClInclude Include="TwoFish.h" />
   </ItemGroup>
   <ItemGroup>

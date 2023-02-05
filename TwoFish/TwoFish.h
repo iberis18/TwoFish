@@ -10,9 +10,10 @@ public:
 	TwoFish() = default;
     ~TwoFish() = default;
 	static string generateKey();
-	static void init(const vector<unsigned>& vector);
+	int createKeys(const vector<unsigned int>& key);
 
 private:
+    int init_;
     unsigned int Me[4]; //вектор Ме (четные M)
     unsigned int Mo[4]; //вектор Mо (нечетные М)
     unsigned int S[4];  //вектор S. S-box (базис для алгоритма генерации ключей с использованием функции h) для использования в функции g

@@ -21,6 +21,9 @@
     <ClInclude Include="FileOperations.h">
       <Filter>Файлы заголовков</Filter>
     </ClInclude>
+    <ClInclude Include="GF2pow8.h">
+      <Filter>Файлы заголовков</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Main.cpp">
