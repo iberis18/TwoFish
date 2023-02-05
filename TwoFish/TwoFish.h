@@ -9,6 +9,8 @@ class TwoFish
 public:
 	TwoFish() = default;
     ~TwoFish() = default;
+	int encrypt(const vector<unsigned int>& src, vector<unsigned int>& dst);
+	int decrypt(const vector<unsigned int>& src, vector<unsigned int>& ds);
 	static string generateKey();
 	int createKeys(const vector<unsigned int>& key);
 

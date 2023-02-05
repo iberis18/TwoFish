@@ -104,6 +104,7 @@ unsigned int H(unsigned int X, const unsigned int* L)
     return (z.dw);
 }
 
+
 string TwoFish::generateKey()
 {
     string s;
@@ -175,5 +176,61 @@ int TwoFish::createKeys(const vector<unsigned int>& key)
     this->init_ = 1;
 
     return(0);
+}
+
+int TwoFish::encrypt(const vector<unsigned>& src, vector<unsigned>& dst)
+{
+    //if (!this->init_)
+    //{
+    //    std::cerr << "Keys and messages not generated." << std::endl;
+    //    return (-1);
+    //}
+
+    //байты 128-ого блока исходной информации
+    unsigned int p[4];
+    //Входное забеливание 
+    p[0] = src[0] ^ this->Key[0];
+    p[1] = src[1] ^ this->Key[1];
+    p[2] = src[2] ^ this->Key[2];
+    p[3] = src[3] ^ this->Key[3];
+
+    //цикл на 16 раундов
+    for (unsigned int round = 0; round < 16; round++)
+    {
+	    //Функция G
+
+	    const unsigned int g0 = H(p[0], this->S);
+
+	    const unsigned int g1 = H(ROL32(p[1], 8), this->S);
+
+        //Блоки  трансформируются с помощью PHT
+        unsigned int f0 = g0 + g1 + this->Key[round * 2 + 8];
+        unsigned int f1 = g0 + (g1 << 1) + this->Key[round * 2 + 9];
+
+        p[2] ^= f0;
+        p[2] = ROR32(p[2], 1);
+        p[3] = ROL32(p[3], 1) ^ f1;
+
+        f0 = p[0];
+        f1 = p[1];
+
+        p[0] = p[2];
+        p[1] = p[3];
+        p[2] = f0;
+        p[3] = f1;
+    }
+
+    //Выходное забеливание
+    dst.push_back(p[2] ^ this->Key[4]);
+    dst.push_back(p[3] ^ this->Key[5]);
+    dst.push_back(p[0] ^ this->Key[6]);
+    dst.push_back(p[1] ^ this->Key[7]);
+
+	return 0;
+}
+
+int TwoFish::decrypt(const vector<unsigned>& src, vector<unsigned>& ds)
+{
+
 }
 

@@ -49,3 +49,39 @@ vector<unsigned int> stringToInt(const string& str)
 
     return arr;
 }
+
+void writeFile(const string& filePath, vector<unsigned int> arr, bool encrypted = false)
+{
+    ofstream fs(filePath, ios_base::out | ios_base::binary);
+    // if (fs.fail())
+    //     exit(1);
+
+    vector<unsigned> arrCopy(arr.size());
+    copy(arr.begin(), arr.end(), arrCopy.begin());
+    while (arrCopy.back() == 0)
+        arrCopy.pop_back();
+
+    if (encrypted)
+    {
+        fs.write(reinterpret_cast<const char*>(arrCopy.data()), arrCopy.size() * 4);
+        return;
+    }
+
+    unsigned int back = arrCopy[arrCopy.size() - 1];
+    arrCopy.pop_back();
+    fs.write(reinterpret_cast<const char*>(arrCopy.data()), arrCopy.size() * 4);
+
+    for (int i = 0; i < 4; i++)
+    {
+        int shift = 8 * i;
+        auto r = back >> shift;
+        r &= 255;
+        if (r != 0)
+        {
+            char backChar = static_cast<unsigned char>(r);
+            fs.write(&backChar, 1);
+        }
+        else
+            break;
+    }
+}
