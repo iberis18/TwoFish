@@ -16,7 +16,7 @@ int main()
 	//чтение файла
 	vector<unsigned int> arr = readFile("infile.bmp");
 
-	//генерация ключа
+	//генерация случайного ключа (256 бит)
 	const string key = twofish.generateKey();
 	cout << "Ключ: " << key << endl << endl;
 	const vector<unsigned int> intKey = stringToInt(key);
@@ -38,12 +38,9 @@ int main()
 	cout << "Расшифровка..." << endl;
 	for (int i = 0; i < encrypt.size(); i += 4)
 		twofish.decrypt({ encrypt[i], encrypt[i + 1], encrypt[i + 2], encrypt[i + 3] }, decrypt);
+	//вывод в файл
+	writeFile("decrypted.bmp", decrypt);
 	cout << "Расшифровка выполнена!" << endl << endl;
-
-	//distribution(encrypt);
-
-	writeFile("1_dec.bmp", decrypt);
-
 
 	return 0;
 }	

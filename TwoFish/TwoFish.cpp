@@ -1,7 +1,7 @@
-﻿#include "TwoFish.h"
-#include <ctime>
+﻿#include <ctime>
 #include <iostream>
 
+#include "TwoFish.h"
 #include "GF2pow8.h"
 
 using namespace std;
@@ -84,22 +84,22 @@ unsigned int H(unsigned int X, const unsigned int* L)
     y.b[2] = q1(y.b[2]);
     y.b[3] = q0(y.b[3]);
 
-    z.b[0] = static_cast<unsigned char>(gfMod(gfMultiplication(y.b[0], MDS[0]), 0x169) ^
-        gfMod(gfMultiplication(y.b[1], MDS[1]), 0x169) ^
-        gfMod(gfMultiplication(y.b[2], MDS[2]), 0x169) ^
-        gfMod(gfMultiplication(y.b[3], MDS[3]), 0x169)); 
-    z.b[1] = static_cast<unsigned char>(gfMod(gfMultiplication(y.b[0], MDS[4]), 0x169) ^
-        gfMod(gfMultiplication(y.b[1], MDS[5]), 0x169) ^
-        gfMod(gfMultiplication(y.b[2], MDS[6]), 0x169) ^
-        gfMod(gfMultiplication(y.b[3], MDS[7]), 0x169));
-    z.b[2] = static_cast<unsigned char>(gfMod(gfMultiplication(y.b[0], MDS[8]), 0x169) ^
-        gfMod(gfMultiplication(y.b[1], MDS[9]), 0x169) ^
-        gfMod(gfMultiplication(y.b[2], MDS[10]), 0x169) ^
-        gfMod(gfMultiplication(y.b[3], MDS[11]), 0x169));
-    z.b[3] = static_cast<unsigned char>(gfMod(gfMultiplication(y.b[0], MDS[12]), 0x169) ^
-        gfMod(gfMultiplication(y.b[1], MDS[13]), 0x169) ^
-        gfMod(gfMultiplication(y.b[2], MDS[14]), 0x169) ^
-        gfMod(gfMultiplication(y.b[3], MDS[15]), 0x169));
+    z.b[0] = static_cast<unsigned char>(gfMod(gfMultiplication(y.b[0], MDS[0]), 0x14d) ^
+        gfMod(gfMultiplication(y.b[1], MDS[1]), 0x14d) ^
+        gfMod(gfMultiplication(y.b[2], MDS[2]), 0x14d) ^
+        gfMod(gfMultiplication(y.b[3], MDS[3]), 0x14d));
+    z.b[1] = static_cast<unsigned char>(gfMod(gfMultiplication(y.b[0], MDS[4]), 0x14d) ^
+        gfMod(gfMultiplication(y.b[1], MDS[5]), 0x14d) ^
+        gfMod(gfMultiplication(y.b[2], MDS[6]), 0x14d) ^
+        gfMod(gfMultiplication(y.b[3], MDS[7]), 0x14d));
+    z.b[2] = static_cast<unsigned char>(gfMod(gfMultiplication(y.b[0], MDS[8]), 0x14d) ^
+        gfMod(gfMultiplication(y.b[1], MDS[9]), 0x14d) ^
+        gfMod(gfMultiplication(y.b[2], MDS[10]), 0x14d) ^
+        gfMod(gfMultiplication(y.b[3], MDS[11]), 0x14d));
+    z.b[3] = static_cast<unsigned char>(gfMod(gfMultiplication(y.b[0], MDS[12]), 0x14d) ^
+        gfMod(gfMultiplication(y.b[1], MDS[13]), 0x14d) ^
+        gfMod(gfMultiplication(y.b[2], MDS[14]), 0x14d) ^
+        gfMod(gfMultiplication(y.b[3], MDS[15]), 0x14d));
 
     return (z.dw);
 }
@@ -108,7 +108,7 @@ unsigned int H(unsigned int X, const unsigned int* L)
 string TwoFish::generateKey()
 {
     string s;
-    srand(static_cast<unsigned int>(time(nullptr))); //todo адекватный ранд
+    srand((time(nullptr)));
 
     static constexpr char alphanum[] = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 
@@ -118,20 +118,14 @@ string TwoFish::generateKey()
     return s;
 }
 
-int TwoFish::createKeys(const vector<unsigned int>& key)
+void TwoFish::createKeys(const vector<unsigned int>& key)
 {
-	//todo обработка длины ключа
-    //ключ длины N = 128, 192, 256 бит.
-    // if (key.size() > 8)
-    // {
-    //     std::cerr << "Key size does not match." << std::endl;
-    //     return (-1);
-    // }
+    unsigned int i, j, k;
+    unsigned char* m, * S;
 
     //группирование байт ключа для генерации вектора S
-    unsigned char* m = (unsigned char*)key.data();
+    m = (unsigned char*)key.data();
 
-    //K = 4, 6, 8.
     //Мe = (М0, М2, ..., М 2К - 2) (четные)
     //Мo = (М1, М3, ..., М 2К - 1) (нечетные)
     //недостающие до ближайшего N биты ключа назначаются равными 0
@@ -139,76 +133,66 @@ int TwoFish::createKeys(const vector<unsigned int>& key)
     {
         if (j > key.size())
         {
-            this->Me[i] = 0x00000000;
-            this->Mo[i] = 0x00000000;
+            Me[i] = 0x00000000;
+            Mo[i] = 0x00000000;
             continue;
         }
-        this->Me[i] = key[j];
-        this->Mo[i] = key[j + 1];
+        Me[i] = key[j];
+    	Mo[i] = key[j + 1];
     }
 
     //Третий вектор S так же формируется из исходного ключа.
     //Состоит из k 32-битных слов.
     //Исходные байты ключа разбиваем на к групп по 8 байтов.
-    //Каждую группу умножаем как вектор на RS-матрицу (матрица 4*8 Рида-Соломона) в поле Галуа GF(2^8)
+    //Каждую группу умножаем как вектор на RS-матрицу (матрица 4*8 Рида-Соломона) в поле Галуа GF(2^8).
 
-    for (unsigned int i = 0; i < 4; i++)
+    for (i = 0; i < 4; i++)
     {
-        unsigned char* S = reinterpret_cast<unsigned char*>(&(this->S[3 - i]));
-        for (unsigned int j = 0; j < 4; j++)
+        S = (unsigned char*)&(this->S[3 - i]);
+        for (j = 0; j < 4; j++)
         {
             S[j] = static_cast<unsigned char>(gfMod(gfMultiplication(RS[j << 3], m[i << 3]), 0x14d));
-            for (unsigned int k = 1; k < 8; k++)
+            for (k = 1; k < 8; k++)
                 S[j] ^= gfMod(gfMultiplication(RS[(j << 3) + k], m[(i << 3) + k]), 0x14d);
         }
     }
 
     //генерация 40 расширенных ключей
-    for (unsigned int i = 0; i < 20; i++)
+    for (i = 0; i < 20; i++)
     {
-	    const unsigned int ai = H(p * (i << 1), this->Me);
-	    const unsigned int bi = ROL32(H(p * ((i << 1) + 1), this->Mo), 8);
+	    unsigned int ai = H(p * (i << 1), Me);
+        unsigned int bi = ROL32(H(p * ((i << 1) + 1), Mo), 8);
 
-        this->Key[i << 1] = ai + bi;
-        this->Key[(i << 1) + 1] = ROL32(ai + (bi << 1), 9);
+        Key[i << 1] = ai + bi;
+        Key[(i << 1) + 1] = ROL32(ai + (bi << 1), 9);
     }
-
-    this->init_ = 1;
-
-    return(0);
 }
 
-int TwoFish::encrypt(const vector<unsigned>& src, vector<unsigned>& dst)
+void TwoFish::encrypt(const vector<unsigned>& src, vector<unsigned>& dst)
 {
-    //if (!this->init_)
-    //{
-    //    std::cerr << "Keys and messages not generated." << std::endl;
-    //    return (-1);
-    //}
-
     //байты 128-ого блока исходной информации
     unsigned int p[4];
     //Входное забеливание 
-    p[0] = src[0] ^ this->Key[0];
-    p[1] = src[1] ^ this->Key[1];
-    p[2] = src[2] ^ this->Key[2];
-    p[3] = src[3] ^ this->Key[3];
+    p[0] = src[0] ^ Key[0];
+    p[1] = src[1] ^ Key[1];
+    p[2] = src[2] ^ Key[2];
+    p[3] = src[3] ^ Key[3];
 
     //цикл на 16 раундов
     for (unsigned int round = 0; round < 16; round++)
     {
 	    //Функция G
 
-	    const unsigned int g0 = H(p[0], this->S);
+	    const unsigned int g0 = H(p[0], S);
 
-	    const unsigned int g1 = H(ROL32(p[1], 8), this->S);
+	    const unsigned int g1 = H(ROL32(p[1], 8), S);
 
         //Блоки  трансформируются с помощью PHT
-        unsigned int f0 = g0 + g1 + this->Key[round * 2 + 8];
-        unsigned int f1 = g0 + (g1 << 1) + this->Key[round * 2 + 9];
+        unsigned int f0 = g0 + g1 + Key[round * 2 + 8];
+        unsigned int f1 = g0 + (g1 << 1) + Key[round * 2 + 9];
 
         p[2] ^= f0;
-        p[2] = ROR32(p[2], 1);
+        p[2] = ROR32(p[2], 1);  
         p[3] = ROL32(p[3], 1) ^ f1;
 
         f0 = p[0];
@@ -221,16 +205,47 @@ int TwoFish::encrypt(const vector<unsigned>& src, vector<unsigned>& dst)
     }
 
     //Выходное забеливание
-    dst.push_back(p[2] ^ this->Key[4]);
-    dst.push_back(p[3] ^ this->Key[5]);
-    dst.push_back(p[0] ^ this->Key[6]);
-    dst.push_back(p[1] ^ this->Key[7]);
-
-	return 0;
+    dst.push_back(p[2] ^ Key[4]);
+    dst.push_back(p[3] ^ Key[5]);
+    dst.push_back(p[0] ^ Key[6]);
+    dst.push_back(p[1] ^ Key[7]);
 }
 
-int TwoFish::decrypt(const vector<unsigned>& src, vector<unsigned>& ds)
+void TwoFish::decrypt(const vector<unsigned>& src, vector<unsigned>& dst)
 {
+    unsigned int p[4];
 
+    //Отмена выходного забеливания
+    p[2] = src[0] ^ Key[4];
+    p[3] = src[1] ^ Key[5];
+    p[0] = src[2] ^ Key[6];
+    p[1] = src[3] ^ Key[7];
+
+    //Отмена 16 раундов
+    for (int round = 15; round >= 0; round--)
+    {
+	    unsigned int g0 = p[0];
+        unsigned int g1 = p[1];
+        p[0] = p[2];
+        p[1] = p[3];
+        p[2] = g0;
+        p[3] = g1;
+
+        g0 = H(p[0], S);
+        g1 = H(ROL32(p[1], 8), S);
+
+	    const unsigned int f0 = g0 + g1 + Key[round * 2 + 8];
+	    const unsigned int f1 = g0 + (g1 << 1) + Key[round * 2 + 9];
+
+        p[2] = ROL32(p[2], 1) ^ f0;
+        p[3] ^= f1;
+        p[3] = ROR32(p[3], 1);
+    }
+
+    //Отмена входного забеливания
+    dst.push_back(p[0] ^ Key[0]);
+    dst.push_back(p[1] ^ Key[1]);
+    dst.push_back(p[2] ^ Key[2]);
+    dst.push_back(p[3] ^ Key[3]);
 }
 

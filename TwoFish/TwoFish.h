@@ -9,13 +9,12 @@ class TwoFish
 public:
 	TwoFish() = default;
     ~TwoFish() = default;
-	int encrypt(const vector<unsigned int>& src, vector<unsigned int>& dst);
-	int decrypt(const vector<unsigned int>& src, vector<unsigned int>& ds);
+	void encrypt(const vector<unsigned int>& src, vector<unsigned int>& dst);
+	void decrypt(const vector<unsigned int>& src, vector<unsigned int>& ds);
 	static string generateKey();
-	int createKeys(const vector<unsigned int>& key);
+	void createKeys(const vector<unsigned int>& key);
 
 private:
-    int init_;
     unsigned int Me[4]; //вектор Ме (четные M)
     unsigned int Mo[4]; //вектор Mо (нечетные М)
     unsigned int S[4];  //вектор S. S-box (базис для алгоритма генерации ключей с использованием функции h) для использования в функции g
@@ -24,9 +23,9 @@ private:
 
 static constexpr unsigned int p = 0x01010101; //ρ = 2^24 + 2^16 + 2^8 + 1.
 
-#define ROL32(a, b)   (((a) << (b)) | ((a) >> (32 - (b))))
-#define ROR4(a, b)    ((((a) & 0xf) >> (b)) | (((a) & 0xf) << (4 - (b))))
-#define ROR32(a, b)   (((a) >> (b)) | ((a) << (32 - (b))))
+#define ROL32(a, b)   (((a) << (b)) | ((a) >> (32 - (b)))) //сдвиг влево
+#define ROR4(a, b)    ((((a) & 0xf) >> (b)) | (((a) & 0xf) << (4 - (b)))) //4-битный циклический сдвиг вправо
+#define ROR32(a, b)   (((a) >> (b)) | ((a) << (32 - (b)))) //циклический сдвиг вправо 
 
 static const unsigned char MDS[] =
 {

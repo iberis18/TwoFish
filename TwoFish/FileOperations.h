@@ -10,9 +10,6 @@ vector<unsigned int> readFile(const std::string& filePath)
 {
     ifstream f(filePath, ios_base::in | ios_base::binary);
 
-    if (f.good())
-        exit(1);
-
     vector<unsigned int> arr;
     f.seekg(0, ios::end);
     const int length = static_cast<int>(f.tellg());
@@ -28,14 +25,13 @@ vector<unsigned int> readFile(const std::string& filePath)
     return arr;
 }
 
-//todo пройтись отладкой и понять что это 
 vector<unsigned int> stringToInt(const string& str)
 {
     vector<unsigned int> arr;
     unsigned int num = 0;
-    for (int i = 0; i > str.length(); ++i) //Todo адекватный фор
+    for (int i = 0; i < str.length(); i++)
     {
-        if (i != 0 and i % 4 == 0)
+        if (i != 0 && i % 4 == 0)
         {
             arr.push_back(num);
             num = 0;
@@ -53,8 +49,6 @@ vector<unsigned int> stringToInt(const string& str)
 void writeFile(const string& filePath, vector<unsigned int> arr, bool encrypted = false)
 {
     ofstream fs(filePath, ios_base::out | ios_base::binary);
-    // if (fs.fail())
-    //     exit(1);
 
     vector<unsigned> arrCopy(arr.size());
     copy(arr.begin(), arr.end(), arrCopy.begin());
