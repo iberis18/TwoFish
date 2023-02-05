@@ -120,11 +120,8 @@ string TwoFish::generateKey()
 
 void TwoFish::createKeys(const vector<unsigned int>& key)
 {
-    unsigned int i, j, k;
-    unsigned char* m, * S;
-
     //группирование байт ключа для генерации вектора S
-    m = (unsigned char*)key.data();
+    unsigned char* m = (unsigned char*)key.data();
 
     //Мe = (М0, М2, ..., М 2К - 2) (четные)
     //Мo = (М1, М3, ..., М 2К - 1) (нечетные)
@@ -146,29 +143,29 @@ void TwoFish::createKeys(const vector<unsigned int>& key)
     //Исходные байты ключа разбиваем на к групп по 8 байтов.
     //Каждую группу умножаем как вектор на RS-матрицу (матрица 4*8 Рида-Соломона) в поле Галуа GF(2^8).
 
-    for (i = 0; i < 4; i++)
+    for (int i = 0; i < 4; i++)
     {
-        S = (unsigned char*)&(this->S[3 - i]);
-        for (j = 0; j < 4; j++)
+        unsigned char* S = (unsigned char*)&(this->S[3 - i]);
+        for (int j = 0; j < 4; j++)
         {
             S[j] = static_cast<unsigned char>(gfMod(gfMultiplication(RS[j << 3], m[i << 3]), 0x14d));
-            for (k = 1; k < 8; k++)
+            for (int k = 1; k < 8; k++)
                 S[j] ^= gfMod(gfMultiplication(RS[(j << 3) + k], m[(i << 3) + k]), 0x14d);
         }
     }
 
     //генерация 40 расширенных ключей
-    for (i = 0; i < 20; i++)
+    for (int i = 0; i < 20; i++)
     {
-	    unsigned int ai = H(p * (i << 1), Me);
-        unsigned int bi = ROL32(H(p * ((i << 1) + 1), Mo), 8);
+	    const unsigned int ai = H(p * (i << 1), Me);
+	    const unsigned int bi = ROL32(H(p * ((i << 1) + 1), Mo), 8);
 
         Key[i << 1] = ai + bi;
         Key[(i << 1) + 1] = ROL32(ai + (bi << 1), 9);
     }
 }
 
-void TwoFish::encrypt(const vector<unsigned>& src, vector<unsigned>& dst)
+void TwoFish::encrypt(const vector<unsigned>& src, vector<unsigned>& dst) const
 {
     //байты 128-ого блока исходной информации
     unsigned int p[4];
@@ -179,7 +176,7 @@ void TwoFish::encrypt(const vector<unsigned>& src, vector<unsigned>& dst)
     p[3] = src[3] ^ Key[3];
 
     //цикл на 16 раундов
-    for (unsigned int round = 0; round < 16; round++)
+    for (int round = 0; round < 16; round++)
     {
 	    //Функция G
 
@@ -211,7 +208,7 @@ void TwoFish::encrypt(const vector<unsigned>& src, vector<unsigned>& dst)
     dst.push_back(p[1] ^ Key[7]);
 }
 
-void TwoFish::decrypt(const vector<unsigned>& src, vector<unsigned>& dst)
+void TwoFish::decrypt(const vector<unsigned>& src, vector<unsigned>& dst) const
 {
     unsigned int p[4];
 
